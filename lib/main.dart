@@ -64,23 +64,43 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final List<String> _myNames = [
     "Dan",
-    "Steve"
+    "Steve",
+    "Shane",
+    "Haven",
+    "Mariah",
+    "Marianna",
+    "Moriah",
+    "Harold",
+    "Ishaan",
+    "Reynaldo",
+    "Semaj",
+    "Mitchell",
+    "Xavier",
+    "Aaron",
+    "Maeve"
   ];
 
   String? _myName;
+  int _nameIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _myName = _myNames[0];   
-    
+    _myName = _myNames[0];
+
   }
 
   void onPressed(){
     setState(() {
-      _myName = _myNames[1];
+      _nameIndex++;
+      if (_nameIndex > _myNames.length)
+      {
+        _nameIndex = 0;
+      }
+
+      _myName = _myNames[_nameIndex];
     });
-    
+
   }
 
   @override
@@ -132,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             TextButton(
-              onPressed: onPressed, 
+              onPressed: onPressed,
               child: const Text("Press Me Please!!!!"))
           ],
         ),
