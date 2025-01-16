@@ -1,7 +1,7 @@
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 
-class Forecast{
+class Forecast {
   final String? name;
   final bool isDaytime;
   final int temperature;
@@ -28,7 +28,7 @@ class Forecast{
     required this.dewpoint,
   });
 
-  factory Forecast.fromJson(Map<String, dynamic> json){
+  factory Forecast.fromJson(Map<String, dynamic> json) {
     return Forecast(
       name: json["name"].length > 0? json["name"] : null,
       isDaytime: json["isDaytime"],
@@ -44,18 +44,25 @@ class Forecast{
     );
   }
 
-  // TODO: Finish the toString() function, printing every value
   @override
-  String toString(){
-    return "name: ${name}\n" // TODO: if this is null, print "None"
-      "isDaytime: ${isDaytime ? "Yes" : "No"}\n";
+  String toString() {
+    return "name: ${name ?? "None"}\n"
+      "isDaytime: ${isDaytime ? "Yes" : "No"}\n"
+      "temperature: $temperature\n"
+      "temperatureUnit: $temperatureUnit\n"
+      "windSpeed: $windSpeed\n"
+      "windDirection: $windDirection\n"
+      "shortForecast: $shortForecast\n"
+      "detailedForecast: $detailedForecast\n"
+      "precipitationProbabability: $precipitationProbability\n"
+      "humidity: $humidity\n"
+      "dewPoint: $dewpoint";
   }
 }
 
-void getForecastFromPoints(double lat, double lon) async{
-  // TODO: Update this function to return a list of forecasts
+Future<List<Forecast>> getForecastFromPoints(double lat, double lon) async {
   // make a request to the weather api using the latitude and longitude and decode the json data
-  String pointsUrl = "https://api.weather.gov/points/${lat},${lon}";
+  String pointsUrl = "https://api.weather.gov/points/$lat,$lon";
   Map<String, dynamic> pointsJson = await getRequestJson(pointsUrl);
 
   // pull the forecast URL from the response json
@@ -63,13 +70,11 @@ void getForecastFromPoints(double lat, double lon) async{
 
   // make a request to the forecastJson url and decode the json data
   Map<String, dynamic> forecastJson = await getRequestJson(forecastUrl);
-  processForecasts(forecastJson["properties"]["periods"]);
 
-  return null;
+  return processForecasts(forecastJson["properties"]["periods"]);
 }
 
-void getForecastHourlyFromPoints(double lat, double lon) async{
-  // TODO: Update this function to return a list of forecasts
+Future<List<Forecast>> getForecastHourlyFromPoints(double lat, double lon) async {
   // make a request to the weather api using the latitude and longitude and decode the json data
   String pointsUrl = "https://api.weather.gov/points/${lat},${lon}";
   Map<String, dynamic> pointsJson = await getRequestJson(pointsUrl);
@@ -81,47 +86,20 @@ void getForecastHourlyFromPoints(double lat, double lon) async{
   Map<String, dynamic> forecastHourlyJson = await getRequestJson(forecastHourlyUrl);
   processForecasts(forecastHourlyJson["properties"]["periods"]);
 
-  return null;
+  return processForecasts(forecastHourlyJson["properties"]["periods"]);
 }
 
-void processForecasts(List<dynamic> forecasts){
-  // TODO: Change this function to return a List of Forecast Objects
-  for (dynamic forecast in forecasts){
-    Forecast forecastObj = Forecast.fromJson(forecast);
+List<Forecast> processForecasts(List<dynamic> forecasts){
+  var forecastsProcessed = <Forecast>[];
+
+  for (dynamic forecast in forecasts) {
+    forecastsProcessed.add(Forecast.fromJson(forecast));
   }
+
+  return forecastsProcessed;
 }
 
-void processForecast(Map<String, dynamic> forecast){
-  String forecastName = forecast["name"];
-  bool isDaytime = forecast["isDaytime"];
-  int temperature = forecast["temperature"];
-  String tempUnit = forecast["temperatureUnit"];
-  String windSpeed = forecast["windSpeed"];
-  String windDirection = forecast["windDirection"];
-  String shortForecast = forecast["shortForecast"];
-  String detailedForecast = forecast["detailedForecast"];
-  int? preciptationProb = forecast["probabilityOfPrecipitation"]["value"] ?? null;
-  int? humidity = forecast["relativeHumidity"] != null ? forecast["relativeHumidity"]["value"] : null;
-  num? dewpoint = forecast["dewpoint"]?["value"];
-
-  Forecast forecastObj = Forecast(
-    name: forecastName, 
-    isDaytime: isDaytime, 
-    temperature: temperature, 
-    temperatureUnit: tempUnit, 
-    windSpeed: windSpeed, 
-    windDirection: windDirection, 
-    shortForecast: shortForecast, 
-    detailedForecast: detailedForecast, 
-    precipitationProbability: preciptationProb, 
-    humidity: humidity, 
-    dewpoint: dewpoint);
-
-  return;
-}
-
-
-Future<Map<String, dynamic>> getRequestJson(String url) async{
+Future<Map<String, dynamic>> getRequestJson(String url) async {
   http.Response r = await http.get(Uri.parse(url));
   return convert.jsonDecode(r.body);
 }

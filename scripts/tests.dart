@@ -1,12 +1,27 @@
 import './forecast.dart' as forecast;
 
 Future<void> main() async {
-  // testing with Bend, OR coordinates
-  double lat = 44.05;
-  double lon = -121.31;
-  // TODO: Seach for latitutes and longitudes of 5 cities in the US on the internet
+  var cities = <List<double>> [
+    // Bend, OR
+    [44.05, -121.31],
+
+    // Woodinville, WA
+    [47.7543, -1122.1635],
+
+    // Redding, CA
+    [40.5865, -122.3917],
+
+    // Albuquerque, NM
+    [35.0844, -106.6504],
+
+    // Miami, FL
+    [25.7617, -80.1918]
+  ];
+
   // Create a for loop that will generate forecasts arrays for each city
-  // TODO: create forecasts and forecastsHourly both of type List<forecast.Forecast>
-  forecast.getForecastFromPoints(lat, lon);
-  forecast.getForecastHourlyFromPoints(lat,lon);
+  for (var latlong in cities) {
+    var forecasts = await forecast.getForecastFromPoints(latlong[0], latlong[1]);
+    var forecastsHourly = await forecast.getForecastHourlyFromPoints(latlong[0], latlong[1]);
+
+  }
 }
