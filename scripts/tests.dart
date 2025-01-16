@@ -6,7 +6,7 @@ Future<void> main() async {
     [44.05, -121.31],
 
     // Woodinville, WA
-    [47.7543, -1122.1635],
+    [47.7543, -122.1635],
 
     // Redding, CA
     [40.5865, -122.3917],
@@ -22,6 +22,5 @@ Future<void> main() async {
   for (var latlong in cities) {
     var forecasts = await forecast.getForecastFromPoints(latlong[0], latlong[1]);
     var forecastsHourly = await forecast.getForecastHourlyFromPoints(latlong[0], latlong[1]);
-
   }
 }
