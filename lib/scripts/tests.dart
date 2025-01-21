@@ -12,10 +12,40 @@ void testLocation() async {
   // iterate through the list, calling location.getLocationFromAddress function for each iteration
   // passing in the city, state, and zip.
   // Debug with a breakpoint after the return (you can use a placeholder like print("test") for your breakpoint)
-  // Check to ensure each location returns as expected through debugging. 
+  // Check to ensure each location returns as expected through debugging.
 
-  location.getLocationFromAddress("oijeqofwkjfla", "asdfsd", "98839829382");
+  List<Map<String, String>> locations = [
+    {
+      'city': 'Bend',
+      'state': 'OR',
+      'zip': '97701'
+    },
+    {
+      'city': 'Redmond',
+      'state': 'OR',
+      'zip': '97756'
+    },
+    {
+      'city': 'Woodinville',
+      'state': 'WA',
+      'zip': '98072'
+    },
+    {
+      'city': 'Albuquerque',
+      'state': 'NM',
+      'zip': '87101'
+    },
+    {
+      'city': 'Miami',
+      'state': 'FL',
+      'zip': '33101'
+    }
+  ];
 
+  for (var item in locations) {
+    var loc = location.getLocationFromAddress(item['city']!, item['state']!, item['zip']!);
+    print('break');
+  }
 }
 
 
