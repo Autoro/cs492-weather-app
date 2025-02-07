@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    setLocation();
+    setLocationFromGps();
 
   }
 
@@ -107,7 +107,6 @@ class _MyHomePageState extends State<MyHomePage> {
     List<forecast.Forecast> dailyForecasts = [];
     for (int i = 0; i < _forecasts.length-1; i+=2){
       dailyForecasts.add(forecast.getForecastDaily(_forecasts[i], _forecasts[i+1]));
-      
     }
     setState(() {
       _dailyForecasts = dailyForecasts;
@@ -118,24 +117,30 @@ class _MyHomePageState extends State<MyHomePage> {
     return _forecastsHourly.where((f)=>time.equalDates(f.startTime, _dailyForecasts[i].startTime)).toList();
   }
 
-  void setLocation() async {
-    if (_location == null){
-      location.Location currentLocation = await location.getLocationFromGps();
+  void setLocationFromGps() async {
+    location.Location currentLocation = await location.getLocationFromGps();
 
-      List<forecast.Forecast> currentHourlyForecasts = await getHourlyForecasts(currentLocation);
-      List<forecast.Forecast> currentForecasts = await getForecasts(currentLocation);
+    setLocation(currentLocation);
+  }
 
-      setState(() {
-        _location = currentLocation;
-        _forecastsHourly = currentHourlyForecasts;
-        _forecasts = currentForecasts;
-        setDailyForecasts();
-        _filteredForecastsHourly = getFilteredForecasts(0);
-        _activeForecast = _forecastsHourly[0];
-        
-        
-      });
-    }
+  void setLocationFromAddress(String city, String state, String zip) async {
+    location.Location? currentLocation = await location.getLocationFromAddress(city, state, zip);
+
+    setLocation(currentLocation!);
+  }
+
+  void setLocation(location.Location currentLocation) async {
+    List<forecast.Forecast> currentHourlyForecasts = await getHourlyForecasts(currentLocation);
+    List<forecast.Forecast> currentForecasts = await getForecasts(currentLocation);
+
+    setState(() {
+      _location = currentLocation;
+      _forecastsHourly = currentHourlyForecasts;
+      _forecasts = currentForecasts;
+      setDailyForecasts();
+      _filteredForecastsHourly = getFilteredForecasts(0);
+      _activeForecast = _forecastsHourly[0];
+    });
   }
 
   @override
@@ -167,13 +172,13 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body:TabBarView(
           children: [ForecastTabWidget(
-            location: _location, 
+            location: _location,
             activeForecast: _activeForecast,
             dailyForecasts: _dailyForecasts,
             filteredForecastsHourly: _filteredForecastsHourly,
             setActiveForecast: setActiveForecast,
             setActiveHourlyForecast: setActiveHourlyForecast),
-          LocationTabWidget()]
+          LocationTabWidget(gpsCallback: setLocationFromGps, addressCallback: setLocationFromAddress)]
         ),
       ),
     );
@@ -183,13 +188,66 @@ class _MyHomePageState extends State<MyHomePage> {
 // TODO: Add a button to this widget that sets the active location to the phone's GPS location
 // TODO: Add 3 text fields for city state zip and a submit button that sets the location based on the user's entries
 class LocationTabWidget extends StatelessWidget {
-  const LocationTabWidget({
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController stateController = TextEditingController();
+  final TextEditingController zipController = TextEditingController();
+  final Function _gpsCallback;
+  final Function _addressCallback;
+
+  LocationTabWidget({
     super.key,
-  });
+    required gpsCallback,
+    required addressCallback
+  }): _gpsCallback = gpsCallback, _addressCallback = addressCallback;
+
+  void onGpsPressed() {
+    _gpsCallback();
+  }
+
+  void onAddressPressed() {
+    _addressCallback(cityController.text, stateController.text, zipController.text);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Text("PLACEHOLDER!!!!!");
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        spacing: 32,
+        children: [
+          Text(
+            style: Theme.of(context).textTheme.headlineMedium,
+            "Weather Location"
+          ),
+          ElevatedButton(
+            onPressed: onGpsPressed,
+            child: Text(textAlign: TextAlign.left, "Use current location")
+          ),
+          Column(
+            spacing: 8,
+            children: [
+              TextField(
+                decoration: InputDecoration(label: Text("City")),
+                controller: cityController,
+              ),
+              TextField(
+                decoration: InputDecoration(label: Text("State")),
+                controller: stateController
+              ),
+              TextField(
+                decoration: InputDecoration(label: Text("Zip")),
+                controller: zipController
+              ),
+              ElevatedButton(
+                onPressed: onAddressPressed,
+                child: Text("Search")
+              )
+            ],
+          )
+
+        ]
+      ),
+    );
   }
 }
 
@@ -203,7 +261,7 @@ class ForecastTabWidget extends StatelessWidget {
     required Function setActiveForecast,
     required Function setActiveHourlyForecast
 
-  }) : _location = location, 
+  }) : _location = location,
       _activeForecast = activeForecast,
       _dailyForecasts = dailyForecasts,
       _filteredForecastsHourly = filteredForecastsHourly,
