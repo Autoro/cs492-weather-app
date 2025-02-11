@@ -81,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<forecast.Forecast> dailyForecasts = [];
     for (int i = 0; i < _forecasts.length-1; i+=2){
       dailyForecasts.add(forecast.getForecastDaily(_forecasts[i], _forecasts[i+1]));
-      
+
     }
     setState(() {
       _dailyForecasts = dailyForecasts;
@@ -92,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return _forecastsHourly.where((f)=>time.equalDates(f.startTime, _dailyForecasts[i].startTime)).toList();
   }
 
-  void setLocation([List<String>? locationList]) async {
+  Future<location.Location> setLocation([List<String>? locationList]) async {
     setState(() {
       _location = null;
     });
@@ -115,6 +115,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _filteredForecastsHourly = getFilteredForecasts(0);
       _activeForecast = _forecastsHourly[0];
     });
+
+    return currentLocation;
   }
 
   @override
@@ -135,13 +137,13 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body:TabBarView(
           children: [ForecastTabWidget(
-            activeLocation: _location, 
+            activeLocation: _location,
             activeForecast: _activeForecast,
             dailyForecasts: _dailyForecasts,
             filteredForecastsHourly: _filteredForecastsHourly,
             setActiveForecast: setActiveForecast,
             setActiveHourlyForecast: setActiveHourlyForecast),
-          LocationTabWidget(setLocation: setLocation, activeLocation: _location)]
+          LocationTabWidget(setLocation: setLocation)]
         ),
       ),
     );
