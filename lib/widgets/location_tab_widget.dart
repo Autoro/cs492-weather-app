@@ -6,28 +6,42 @@ import 'package:weatherapp/scripts/location.dart' as location;
 // Besides setting the active location (which it is already doing)
 // Add that location to a saved loations list (you'll need to create this)
 // Display the saved locations in a new widget below the get from GPS button
-// make the saved location widgets onTap()-able, so the user can tap a previously saved location, 
+// make the saved location widgets onTap()-able, so the user can tap a previously saved location,
 // setting the location based on that
-// 
+//
 
-
-class LocationTabWidget extends StatelessWidget {
+class LocationTabWidget extends StatefulWidget {
   const LocationTabWidget({
     super.key,
     required Function setLocation,
-    required location.Location? activeLocation
-  }) : _setLocation = setLocation, _location = activeLocation;
+  }) : _setLocation = setLocation;
 
   final Function _setLocation;
-  final location.Location? _location;
+
+  @override
+  State<LocationTabWidget> createState() => _LocationTabWidgetState();
+}
+
+class _LocationTabWidgetState extends State<LocationTabWidget> {
+  late location.Location? _activeLocation;
+  final _previousLocations = <location.Location>[];
+
+  void onLocationSubmit(String city, String state, String zip) async {
+    var resolvedLocation = await widget._setLocation([city, state, zip]);
+
+    _activeLocation = resolvedLocation;
+    _previousLocations.add(resolvedLocation);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        LocationDisplayWidget(activeLocation: _location),
-        LoctionInputWidget(setLocation: _setLocation),
-        ElevatedButton(onPressed: ()=>{_setLocation()},child: const Text("Get From GPS"))
+        LocationDisplayWidget(activeLocation: _activeLocation),
+        LoctionInputWidget(
+          onSubmit: onLocationSubmit
+        ),
+        ElevatedButton(onPressed: ()=>{widget._setLocation()},child: const Text("Get From GPS"))
       ],
     );
   }
@@ -50,10 +64,10 @@ class LocationDisplayWidget extends StatelessWidget {
 class LoctionInputWidget extends StatefulWidget {
   const LoctionInputWidget({
     super.key,
-    required Function setLocation
-  }) : _setLocation = setLocation;
+    required Function onSubmit
+  }) : _onSubmit = onSubmit;
 
-  final Function _setLocation;
+  final Function _onSubmit;
 
   @override
   State<LoctionInputWidget> createState() => _LoctionInputWidgetState();
@@ -100,9 +114,6 @@ class _LoctionInputWidgetState extends State<LoctionInputWidget> {
     });
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -117,7 +128,7 @@ class _LoctionInputWidgetState extends State<LoctionInputWidget> {
               LocationTextWidget(width: 100, text: "zip", controller: _zipController, updateText: _updateZip),
             ],
           ),
-          ElevatedButton(onPressed: () {widget._setLocation([_city, _state, _zip]);}, child: Text("Get From Address"))
+          ElevatedButton(onPressed: () {widget._onSubmit(_city, _state, _zip);}, child: Text("Get From Address"))
         ],
       ),
     );
@@ -137,7 +148,6 @@ class LocationTextWidget extends StatelessWidget {
   final String _text;
   final TextEditingController _controller;
   final Function _updateText;
-
 
   @override
   Widget build(BuildContext context) {
