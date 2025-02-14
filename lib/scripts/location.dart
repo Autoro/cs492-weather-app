@@ -16,12 +16,26 @@ class Location{
     required this.longitude
   });
 
+  Location.fromJson(Map<String, dynamic> json)
+  : city = json["city"],
+  state = json["state"],
+  zip = json["zip"],
+  latitude = json["latitude"],
+  longitude = json["longitude"];
+
+  Map<String, dynamic> toJson() => {
+    "city": city,
+    "state": state,
+    "zip": zip,
+    "latitude": latitude,
+    "longitude": longitude
+  };
 }
 
 Future<Location?> getLocationFromAddress(String rawCity, String rawState, String rawZip) async {
   // generate an address string from the city, state, zip
   String address = '$rawCity $rawState $rawZip';
-  try{ 
+  try{
     // use geocoding to get the latitude and longitude from the address string
     List<geocoding.Location> locations = await geocoding.locationFromAddress(address);
     double lat = locations[0].latitude;
@@ -39,8 +53,8 @@ Future<Location?> getLocationFromAddress(String rawCity, String rawState, String
     // throws NoResultFoundException when geocoding fails
     return null;
   }
-  
-} 
+
+}
 
 Future<Location> getLocationFromGps() async {
 
@@ -55,13 +69,13 @@ Future<Location> getLocationFromGps() async {
   // return a Location object with the complete location
   return Location(city: city, state: state, zip: zip, latitude: position.latitude, longitude: position.longitude);
 
-  
-} 
+
+}
 
 
 
 /// This is a helper function taken from the flutter documentation:
-/// 
+///
 /// Determine the current position of the device.
 ///
 /// When the location services are not enabled or permissions
@@ -74,7 +88,7 @@ Future<geolocator.Position> determinePosition() async {
   serviceEnabled = await geolocator.Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     // Location services are not enabled don't continue
-    // accessing the position and request users of the 
+    // accessing the position and request users of the
     // App to enable the location services.
     return Future.error('Location services are disabled.');
   }
@@ -85,18 +99,18 @@ Future<geolocator.Position> determinePosition() async {
     if (permission == geolocator.LocationPermission.denied) {
       // Permissions are denied, next time you could try
       // requesting permissions again (this is also where
-      // Android's shouldShowRequestPermissionRationale 
+      // Android's shouldShowRequestPermissionRationale
       // returned true. According to Android guidelines
       // your App should show an explanatory UI now.
       return Future.error('Location permissions are denied');
     }
   }
-  
+
   if (permission == geolocator.LocationPermission.deniedForever) {
-    // Permissions are denied forever, handle appropriately. 
+    // Permissions are denied forever, handle appropriately.
     return Future.error(
       'Location permissions are permanently denied, we cannot request permissions.');
-  } 
+  }
 
   // When we reach here, permissions are granted and we can
   // continue accessing the position of the device.

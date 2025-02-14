@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart' as path;
 import 'package:weatherapp/scripts/location.dart' as location;
 
 // TODO:
@@ -25,7 +29,34 @@ class LocationTabWidget extends StatefulWidget {
 
 class _LocationTabWidgetState extends State<LocationTabWidget> {
 
-  final List<location.Location> _savedLocations = [];
+  static const _outputFileName = "saved_locations.json";
+  List<location.Location> _savedLocations = [];
+
+  Future<File> _getOutputFile() async {
+    var directory = await path.getApplicationDocumentsDirectory();
+
+    return File("${directory.path}/$_outputFileName");
+  }
+
+  Future<void> _loadSavedLocations() async {
+    var outputFile = await _getOutputFile();
+
+    if (await outputFile.exists()) {
+      var jsonString = await outputFile.readAsString();
+      var jsonData = jsonDecode(jsonString) as List<dynamic>;
+
+      setState(() {
+        _savedLocations = jsonData.map((e) => location.Location.fromJson(e)).toList();
+      });
+    }
+  }
+
+  Future<void> _writeSavedLocations() async {
+    var jsonData = jsonEncode(_savedLocations);
+    var outputFile = await _getOutputFile();
+
+    outputFile.writeAsString(jsonData);
+  }
 
   void _setLocationFromAddress(String city, String state, String zip) async {
     // set location to null temporarily while it finds a new location
@@ -42,11 +73,18 @@ class _LocationTabWidgetState extends State<LocationTabWidget> {
     widget._setLocation(currentLocation);
   }
 
-  
   void _addLocation(location.Location location){
     setState(() {
       _savedLocations.add(location);
     });
+
+    _writeSavedLocations();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedLocations();
   }
 
   @override
@@ -126,7 +164,7 @@ class _LoctionInputWidgetState extends State<LoctionInputWidget> {
   late String _city;
   late String _state;
   late String _zip;
-  
+
   @override
   void initState() {
     super.initState();
