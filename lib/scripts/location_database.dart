@@ -15,7 +15,7 @@ class LocationDatabase {
   LocationDatabase({required Database db}) : _db = db;
 
   static Future<LocationDatabase> open() async {
-    final Database db = await openDatabase(dbName, version: 1, 
+    final Database db = await openDatabase(dbName, version: 1,
       onCreate: (Database db, int version) async {
         String query = await rootBundle.loadString(sqlCreateTable);
         await db.execute(query);
@@ -39,6 +39,14 @@ class LocationDatabase {
 
     _db.transaction((txn) async {
       await txn.rawInsert(query, [location.city, location.state, location.zip, location.latitude, location.longitude]);
+    });
+  }
+
+  void deleteLocation(location.Location location) async {
+    String query = await rootBundle.loadString(sqlDelete);
+
+    _db.transaction((txn) async {
+      await txn.rawDelete(query, [location.zip]);
     });
   }
 }

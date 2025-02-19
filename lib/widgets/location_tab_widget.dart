@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:weatherapp/scripts/location.dart' as location;
+import 'package:weatherapp/scripts/location_database.dart';
 import 'package:weatherapp/scripts/location_storage.dart' as locationStorage;
 
 // TODO: Use the new location.database.dart logic to get the locations
@@ -22,12 +23,27 @@ class LocationTabWidget extends StatefulWidget {
 }
 
 class _LocationTabWidgetState extends State<LocationTabWidget> {
-
   final locationStorage.LocationStorage ls = locationStorage.LocationStorage();
+  late LocationDatabase _locationDb;
 
   List<location.Location> _savedLocations = [];
 
+  void _initializeLocations() async {
+    _locationDb = await LocationDatabase.open();
+    var locations = await _locationDb.getLocations();
 
+    setState(() {
+      _savedLocations = locations;
+    });
+  }
+
+  void _addLocation(location.Location location) async{
+    setState(() {
+      _savedLocations.add(location);
+    });
+
+    _locationDb.insertLocation(location);
+  }
 
   void _setLocationFromAddress(String city, String state, String zip) async {
     // set location to null temporarily while it finds a new location
@@ -44,28 +60,19 @@ class _LocationTabWidgetState extends State<LocationTabWidget> {
     widget._setLocation(currentLocation);
   }
 
-  
-  void _addLocation(location.Location location) async{
+  void _deleteLocation(location.Location loc) {
     setState(() {
-      _savedLocations.add(location);
+      _savedLocations.remove(loc);
     });
 
-    await ls.writeLocations(_savedLocations);
-    
+    _locationDb.deleteLocation(loc);
   }
 
   @override
   void initState() {
     // Get initial locations
     super.initState();
-    _loadLocations();
-  }
-
-  void _loadLocations() async {
-    List<location.Location> locations = await ls.readLocations();
-    setState(() {
-      _savedLocations = locations;
-    });
+    _initializeLocations();
   }
 
   @override
@@ -75,7 +82,7 @@ class _LocationTabWidgetState extends State<LocationTabWidget> {
         LocationDisplayWidget(activeLocation: widget._location),
         LoctionInputWidget(setLocation: _setLocationFromAddress), // pass in _addLocation
         ElevatedButton(onPressed: ()=>{_setLocationFromGps()},child: const Text("Get From GPS")),
-        SavedLocationsWidget(locations: _savedLocations, setLocation: widget._setLocation)
+        SavedLocationsWidget(locations: _savedLocations, setLocation: widget._setLocation, onDelete: _deleteLocation)
       ],
     );
   }
@@ -85,15 +92,19 @@ class SavedLocationsWidget extends StatelessWidget {
   const SavedLocationsWidget({
     super.key,
     required List<location.Location> locations,
-    required Function setLocation
-  }) : _locations = locations, _setLocation = setLocation;
+    required Function setLocation,
+    required Function onDelete
+  }) : _locations = locations, _setLocation = setLocation, _onDelete = onDelete;
 
   final List<location.Location> _locations;
   final Function _setLocation;
+  final Function _onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: _locations.map((loc)=>SavedLocationWidget(loc: loc, setLocation: _setLocation)).toList(),);
+    return Column(
+      children: _locations.map((loc) => SavedLocationWidget(loc: loc, setLocation: _setLocation, onDelete: _onDelete)).toList()
+    );
   }
 }
 
@@ -101,15 +112,30 @@ class SavedLocationWidget extends StatelessWidget {
   const SavedLocationWidget({
     super.key,
     required location.Location loc,
-    required Function setLocation
-  }) : _loc = loc, _setLocation = setLocation;
+    required Function setLocation,
+    required Function onDelete
+  }) : _loc = loc, _setLocation = setLocation, _onDelete = onDelete;
 
   final location.Location _loc;
   final Function _setLocation;
+  final Function _onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(onTap: () {_setLocation(_loc);}, child: Text("${_loc.city}, ${_loc.state} ${_loc.zip}"));
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+      GestureDetector(
+        onTap: () { _setLocation(_loc); },
+        child: Text("${_loc.city}, ${_loc.state} ${_loc.zip}")
+      ),
+      IconButton(
+        iconSize: 16,
+        icon: Icon(Icons.close_rounded),
+        onPressed: () => _onDelete(_loc)
+      )
+    ]);
+
   }
 }
 
@@ -145,7 +171,7 @@ class _LoctionInputWidgetState extends State<LoctionInputWidget> {
   late String _city;
   late String _state;
   late String _zip;
-  
+
   @override
   void initState() {
     super.initState();
