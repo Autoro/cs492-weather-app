@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:weatherapp/scripts/forecast.dart' as forecast;
-import 'package:weatherapp/scripts/time.dart' as time;
+import 'package:weatherapp/models/forecast.dart' as forecast;
+import 'package:weatherapp/widgets/forecast/forecast_name_widget.dart';
 import 'package:weatherapp/widgets/weather_icon_widget.dart';
-
-
-
-
 
 class ForecastSummaryWidget extends StatelessWidget {
   const ForecastSummaryWidget({
@@ -35,13 +31,11 @@ class ForecastSummaryWidget extends StatelessWidget {
             Expanded(
               child: Column(
                 children: [
-                  ForecastNameWidget(forecast: _forecast),
+                  ForecastNameWidget(forecast: _forecast, style: TextStyle(fontSize: 12.0)),
                   WeatherIconWidget(iconPath: _forecast.getIconPath(), width: 50, height: 50)
-                  // ShortForecastWidget(forecast: _forecast)
                 ],
               ),
             ),
-            
             Text(_forecast.tempHighLow ?? "${_forecast.temperature}°${_forecast.temperatureUnit}")
           ],
         ),
@@ -49,44 +43,3 @@ class ForecastSummaryWidget extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-class ForecastNameWidget extends StatelessWidget {
-  const ForecastNameWidget({
-    super.key,
-    required forecast.Forecast forecast,
-  }) : _forecast = forecast;
-
-  final forecast.Forecast _forecast;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      _forecast.name ?? time.convertTimestampToDayAndHour(_forecast.startTime.toLocal()),
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 12.0
-      ));
-  }
-}
-
-class ShortForecastWidget extends StatelessWidget {
-  const ShortForecastWidget({
-    super.key,
-    required forecast.Forecast forecast,
-  }) : _forecast = forecast;
-
-  final forecast.Forecast _forecast;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      _forecast.shortForecast,
-      textAlign: TextAlign.center,
-      style:TextStyle(fontSize: 9.0));
-  }
-}
-

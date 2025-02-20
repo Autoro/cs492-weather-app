@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_svg/flutter_svg.dart';
 
 class WeatherIconWidget extends StatelessWidget {
@@ -8,7 +7,9 @@ class WeatherIconWidget extends StatelessWidget {
     required String iconPath,
     required double height,
     required double width,
-  }) : _iconPath = iconPath, _height = height, _width = width;
+  })  : _iconPath = iconPath,
+        _height = height,
+        _width = width;
 
   final String _iconPath;
   final double _height;

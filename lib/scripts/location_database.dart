@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
-
-import 'package:weatherapp/scripts/location.dart' as location;
+import 'package:weatherapp/models/location.dart' as location;
 
 const dbName = 'location.db';
 const sqlCreateTable = 'assets/sql/create.sql';
@@ -15,13 +14,12 @@ class LocationDatabase {
   LocationDatabase({required Database db}) : _db = db;
 
   static Future<LocationDatabase> open() async {
-    final Database db = await openDatabase(dbName, version: 1, 
-      onCreate: (Database db, int version) async {
-        String query = await rootBundle.loadString(sqlCreateTable);
-        await db.execute(query);
-      });
+    final Database db = await openDatabase(dbName, version: 1, onCreate: (Database db, int version) async {
+      String query = await rootBundle.loadString(sqlCreateTable);
+      await db.execute(query);
+    });
 
-      return LocationDatabase(db: db);
+    return LocationDatabase(db: db);
   }
 
   void close() async {
@@ -38,7 +36,13 @@ class LocationDatabase {
     String query = await rootBundle.loadString(sqlInsert);
 
     _db.transaction((txn) async {
-      await txn.rawInsert(query, [location.city, location.state, location.zip, location.latitude, location.longitude]);
+      await txn.rawInsert(query, [
+        location.city,
+        location.state,
+        location.zip,
+        location.latitude,
+        location.longitude
+      ]);
     });
   }
 

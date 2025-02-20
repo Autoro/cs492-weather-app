@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 
 String convertTimestampToDayAndHour(DateTime dateTime) {
-
   DateTime today = DateTime.now();
 
   String dayOfWeek = equalDates(today, dateTime) ? 'Today' : DateFormat('EEEE').format(dateTime);
@@ -11,12 +10,10 @@ String convertTimestampToDayAndHour(DateTime dateTime) {
   return '$dayOfWeek, $hour';
 }
 
-bool equalDates(DateTime day1, DateTime day2){
-  if (DateTime(day1.year, day1.month, day1.day) == DateTime(day2.year, day2.month, day2.day)){
+bool equalDates(DateTime day1, DateTime day2) {
+  if (DateTime(day1.year, day1.month, day1.day) == DateTime(day2.year, day2.month, day2.day)) {
     return true;
-  }
-  else {
+  } else {
     return false;
   }
-  
 }

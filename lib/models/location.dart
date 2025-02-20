@@ -8,20 +8,22 @@ class Location {
   final double latitude;
   final double longitude;
 
-  Location(
-      {required this.state,
-      required this.city,
-      required this.zip,
-      required this.latitude,
-      required this.longitude});
+  Location({
+    required this.state,
+    required this.city,
+    required this.zip,
+    required this.latitude,
+    required this.longitude
+  });
 
   factory Location.fromJson(Map<String, dynamic> json) {
     return Location(
-        state: json["state"],
-        city: json["city"],
-        zip: json["zip"],
-        latitude: json["latitude"],
-        longitude: json["longitude"]);
+      state: json["state"],
+      city: json["city"],
+      zip: json["zip"],
+      latitude: json["latitude"],
+      longitude: json["longitude"]
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -46,27 +48,23 @@ class Location {
   int get hashCode => zip.hashCode;
 }
 
-Future<Location?> getLocationFromAddress(
-    String rawCity, String rawState, String rawZip) async {
+Future<Location?> getLocationFromAddress(String rawCity, String rawState, String rawZip) async {
   // generate an address string from the city, state, zip
   String address = '$rawCity $rawState $rawZip';
   try {
     // use geocoding to get the latitude and longitude from the address string
-    List<geocoding.Location> locations =
-        await geocoding.locationFromAddress(address);
+    List<geocoding.Location> locations = await geocoding.locationFromAddress(address);
     double lat = locations[0].latitude;
     double lon = locations[0].longitude;
 
     // use reverse geocoding to get a placemark from the latitude and longitude
-    List<geocoding.Placemark> placemarks =
-        await geocoding.placemarkFromCoordinates(lat, lon);
+    List<geocoding.Placemark> placemarks = await geocoding.placemarkFromCoordinates(lat, lon);
     String? state = placemarks[0].administrativeArea;
     String? city = placemarks[0].locality;
     String? zip = placemarks[0].postalCode;
 
     // return a Location object with the complete location
-    return Location(
-        city: city, state: state, zip: zip, latitude: lat, longitude: lon);
+    return Location(city: city, state: state, zip: zip, latitude: lat, longitude: lon);
   } on geocoding.NoResultFoundException {
     // throws NoResultFoundException when geocoding fails
     return null;
@@ -77,19 +75,13 @@ Future<Location> getLocationFromGps() async {
   geolocator.Position position = await determinePosition();
 
   // use reverse geocoding to get a placemark from the latitude and longitude
-  List<geocoding.Placemark> placemarks = await geocoding
-      .placemarkFromCoordinates(position.latitude, position.longitude);
+  List<geocoding.Placemark> placemarks = await geocoding.placemarkFromCoordinates(position.latitude, position.longitude);
   String? state = placemarks[0].administrativeArea;
   String? city = placemarks[0].locality;
   String? zip = placemarks[0].postalCode;
 
   // return a Location object with the complete location
-  return Location(
-      city: city,
-      state: state,
-      zip: zip,
-      latitude: position.latitude,
-      longitude: position.longitude);
+  return Location(city: city, state: state, zip: zip, latitude: position.latitude, longitude: position.longitude);
 }
 
 /// This is a helper function taken from the flutter documentation:
@@ -126,8 +118,7 @@ Future<geolocator.Position> determinePosition() async {
 
   if (permission == geolocator.LocationPermission.deniedForever) {
     // Permissions are denied forever, handle appropriately.
-    return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.');
+    return Future.error('Location permissions are permanently denied, we cannot request permissions.');
   }
 
   // When we reach here, permissions are granted and we can
