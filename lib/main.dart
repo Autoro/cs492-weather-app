@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:weatherapp/providers/settings_provider.dart';
 import 'package:weatherapp/widgets/forecast/forecast_tab_widget.dart';
 import 'package:weatherapp/widgets/location/location_tab_widget.dart';
 import 'package:weatherapp/providers/location_provider.dart';
 import 'package:weatherapp/providers/forecast_provider.dart';
-import 'package:weatherapp/themes/themes.dart' as themes;
 
 // TODOS: The TODOs are located in Assignment8-1 in canvas assignments
 void main() {
@@ -25,12 +25,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsFlutterBinding.ensureInitialized();
+
     var settingsProvider = Provider.of<SettingsProvider>(context);
 
     return MaterialApp(
       title: title,
-      theme: themes.lightTheme,
-      darkTheme: themes.darkTheme,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          brightness: Brightness.light,
+          seedColor: settingsProvider.lightThemeColor
+        ),
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          brightness: Brightness.dark,
+          seedColor: settingsProvider.darkThemeColor
+        ),
+        useMaterial3: true,
+      ),
       themeMode: settingsProvider.darkMode ? ThemeMode.dark : ThemeMode.light,
       home: MyHomePage(title: title),
     );
@@ -96,11 +110,25 @@ class SettingsDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Switch(
-          value: settingsProvider.darkMode,
-          onChanged: (bool value) {
-            settingsProvider.toggleMode();
-          }),
+      child: ListView(
+        children: [
+          ListTile(
+            leading: Text("Dark Mode:"),
+            title: Switch(
+              value: settingsProvider.darkMode,
+              onChanged: (bool value) {
+                settingsProvider.toggleMode();
+              }
+            ),
+          ),
+          ListTile(
+            title: ColorPicker(
+              pickerColor: settingsProvider.currentThemeColor,
+              onColorChanged: (color) => settingsProvider.currentThemeColor = color
+            )
+          )
+        ]
+      ),
     );
   }
 }
