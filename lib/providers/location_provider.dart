@@ -5,13 +5,6 @@ import 'package:weatherapp/utils/firebase_storage.dart' as fs;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:weatherapp/utils/get_image.dart';
 
-// TODOS:
-// add location image url to location model
-// when you save an image to firebase, include a url field
-// when a new active location is selected, check if it exists, if so use that url
-// if not, query the pexels api
-
-
 class LocationProvider extends ChangeNotifier {
   final ForecastProvider forecastProvider;
 
@@ -35,9 +28,14 @@ class LocationProvider extends ChangeNotifier {
   void setLocation(location.Location loc) async {
     activeLocation = loc;
     if (activeLocation != null){
-      activeLocationImg = await getImageByQuery("${activeLocation!.city} ${activeLocation!.state}");
+      if (loc.url?.isEmpty ?? true) {
+        loc.url = await getImageByQuery("${activeLocation!.city} ${activeLocation!.state}");
+        fs.updateEntryWhere("locations", "zip", loc.zip, loc.toJson());
+      }
+
+      activeLocationImg = loc.url;
     }
-    
+
     notifyListeners();
     if (activeLocation != null) {
       forecastProvider.initForecasts(activeLocation!);
@@ -70,9 +68,9 @@ class LocationProvider extends ChangeNotifier {
 
   Future<void> addLocation(location.Location newLocation) async {
     if (! await fs.checkIfEntryExists("locations", "zip", newLocation.zip)){
+      newLocation.url = await getImageByQuery("${activeLocation!.city} ${activeLocation!.state}");
       FirebaseFirestore.instance.collection("locations").add(newLocation.toJson());
     }
-    
   }
 
   Future<void> deleteLocation(location.Location locToDelete) async {
